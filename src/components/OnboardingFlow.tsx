@@ -28,15 +28,15 @@ export const OnboardingFlow = () => {
   const steps: OnboardingStep[] = [
     {
       id: "id-scan",
-      title: "Scan Your ID",
-      description: "Take a photo of your government-issued ID for quick verification",
+      title: "Scan Your Aadhar Card",
+      description: "Take a photo of your Aadhar Card for quick verification",
       icon: <Camera className="h-6 w-6" />,
       completed: formData.idScanned,
     },
     {
       id: "personal-info",
       title: "Personal Information",
-      description: "Confirm your details from the ID scan",
+      description: "Confirm your details from the Aadhar Card scan",
       icon: <User className="h-6 w-6" />,
       completed: !!(formData.firstName && formData.lastName),
     },
@@ -92,7 +92,7 @@ export const OnboardingFlow = () => {
                 <CreditCard className="h-8 w-8 text-primary" />
               </div>
               <p className="text-muted-foreground mb-4">
-                Place your ID in the frame and tap the camera button
+                Place your Aadhar Card in the frame and tap the camera button
               </p>
             </div>
             <Button 
@@ -110,7 +110,7 @@ export const OnboardingFlow = () => {
               ) : (
                 <>
                   <Camera className="h-5 w-5 mr-2" />
-                  Scan ID Document
+                  Scan Aadhar Card
                 </>
               )}
             </Button>
@@ -142,7 +142,7 @@ export const OnboardingFlow = () => {
             </div>
             {formData.idScanned && (
               <div className="text-sm text-success bg-success/10 p-3 rounded-md">
-                ✓ Information automatically filled from your ID scan
+                ✓ Information automatically filled from your Aadhar Card scan
               </div>
             )}
           </div>
