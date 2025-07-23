@@ -9,7 +9,10 @@ import {
   PiggyBank, 
   BookOpen,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  User,
+  MapPin,
+  Hash
 } from "lucide-react";
 
 interface FinancialGoal {
@@ -21,6 +24,12 @@ interface FinancialGoal {
 }
 
 export const FinancialDashboard = () => {
+  const userDetails = {
+    name: "Raj Kumar Sharma",
+    accountId: "ACC123456789",
+    address: "House No. 123, Sector 15, Gurgaon, Haryana - 122001"
+  };
+
   const financialGoals: FinancialGoal[] = [
     {
       id: "emergency",
@@ -71,6 +80,42 @@ export const FinancialDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* User Details */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Account Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-primary/20 rounded-lg">
+              <User className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Account Holder</p>
+              <p className="font-medium text-foreground">{userDetails.name}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-accent/20 rounded-lg">
+              <Hash className="h-5 w-5 text-accent" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Account ID</p>
+              <p className="font-medium text-foreground font-mono">{userDetails.accountId}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-secondary/20 rounded-lg">
+              <MapPin className="h-5 w-5 text-secondary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Address</p>
+              <p className="font-medium text-foreground text-sm">{userDetails.address}</p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       {/* Financial Health Score */}
       <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5">
         <div className="flex items-center justify-between mb-4">
