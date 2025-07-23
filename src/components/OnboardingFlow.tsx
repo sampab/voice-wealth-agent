@@ -20,6 +20,10 @@ export const OnboardingFlow = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    dateOfBirth: "",
+    gender: "",
+    aadharNumber: "",
+    fatherName: "",
     phone: "",
     address: "",
     idScanned: false,
@@ -38,7 +42,7 @@ export const OnboardingFlow = () => {
       title: "Personal Information",
       description: "Confirm your details from the Aadhar Card scan",
       icon: <User className="h-6 w-6" />,
-      completed: !!(formData.firstName && formData.lastName),
+      completed: !!(formData.firstName && formData.lastName && formData.dateOfBirth && formData.aadharNumber),
     },
     {
       id: "contact",
@@ -76,8 +80,13 @@ export const OnboardingFlow = () => {
       setFormData(prev => ({
         ...prev,
         idScanned: true,
-        firstName: "John",
-        lastName: "Doe",
+        firstName: "Rajesh",
+        lastName: "Kumar",
+        dateOfBirth: "1990-05-15",
+        gender: "Male",
+        aadharNumber: "1234 5678 9012",
+        fatherName: "Suresh Kumar",
+        address: "123 MG Road, Bangalore, Karnataka 560001",
       }));
     }, 2000);
   };
@@ -139,6 +148,45 @@ export const OnboardingFlow = () => {
                   placeholder="Enter last name"
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Input
+                  id="gender"
+                  value={formData.gender}
+                  onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                  placeholder="Male/Female/Other"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="aadharNumber">Aadhar Number</Label>
+              <Input
+                id="aadharNumber"
+                value={formData.aadharNumber}
+                onChange={(e) => setFormData(prev => ({ ...prev, aadharNumber: e.target.value }))}
+                placeholder="1234 5678 9012"
+                maxLength={14}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fatherName">Father's Name</Label>
+              <Input
+                id="fatherName"
+                value={formData.fatherName}
+                onChange={(e) => setFormData(prev => ({ ...prev, fatherName: e.target.value }))}
+                placeholder="Enter father's name"
+              />
             </div>
             {formData.idScanned && (
               <div className="text-sm text-success bg-success/10 p-3 rounded-md">
