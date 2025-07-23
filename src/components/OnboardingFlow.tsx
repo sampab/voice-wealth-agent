@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Camera, CheckCircle, CreditCard, User, Phone, MapPin } from "lucide-react";
+import { Camera, CheckCircle, CreditCard, User, Phone, MapPin, Shield, Fingerprint } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OnboardingStep {
@@ -26,35 +26,39 @@ export const OnboardingFlow = () => {
     fatherName: "",
     phone: "",
     address: "",
+    otp: "",
     idScanned: false,
+    otpSent: false,
+    otpVerified: false,
+    biometricVerified: false,
   });
 
   const steps: OnboardingStep[] = [
     {
       id: "id-scan",
       title: "Scan Your Aadhar Card",
-      description: "Take a photo of your Aadhar Card for quick verification",
+      description: "YONO quick onboarding with Aadhar verification",
       icon: <Camera className="h-6 w-6" />,
       completed: formData.idScanned,
     },
     {
-      id: "personal-info",
-      title: "Personal Information",
-      description: "Confirm your details from the Aadhar Card scan",
-      icon: <User className="h-6 w-6" />,
-      completed: !!(formData.firstName && formData.lastName && formData.dateOfBirth && formData.aadharNumber),
+      id: "otp-verification",
+      title: "OTP Verification",
+      description: "Verify your mobile number with OTP",
+      icon: <Shield className="h-6 w-6" />,
+      completed: formData.otpVerified,
     },
     {
-      id: "contact",
-      title: "Contact Information",
-      description: "Add your phone number and address",
-      icon: <Phone className="h-6 w-6" />,
-      completed: !!(formData.phone && formData.address),
+      id: "biometric",
+      title: "Biometric Verification",
+      description: "Quick fingerprint verification",
+      icon: <Fingerprint className="h-6 w-6" />,
+      completed: formData.biometricVerified,
     },
     {
       id: "complete",
-      title: "All Set!",
-      description: "Your account is ready to use",
+      title: "Account Created!",
+      description: "Welcome to your new banking experience",
       icon: <CheckCircle className="h-6 w-6" />,
       completed: false,
     },
@@ -87,7 +91,29 @@ export const OnboardingFlow = () => {
         aadharNumber: "1234 5678 9012",
         fatherName: "Suresh Kumar",
         address: "123 MG Road, Bangalore, Karnataka 560001",
+        phone: "+91 98765 43210", // Auto-filled from Aadhar
       }));
+    }, 2000);
+  };
+
+  const sendOTP = () => {
+    setFormData(prev => ({ ...prev, otpSent: true }));
+    // Simulate OTP sending
+    setTimeout(() => {
+      setFormData(prev => ({ ...prev, otp: "123456" }));
+    }, 1000);
+  };
+
+  const verifyOTP = () => {
+    if (formData.otp === "123456") {
+      setFormData(prev => ({ ...prev, otpVerified: true }));
+    }
+  };
+
+  const verifyBiometric = () => {
+    // Simulate biometric verification
+    setTimeout(() => {
+      setFormData(prev => ({ ...prev, biometricVerified: true }));
     }, 2000);
   };
 
@@ -128,69 +154,58 @@ export const OnboardingFlow = () => {
 
       case 1:
         return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                  placeholder="Enter first name"
-                />
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="text-sm text-muted-foreground mb-4">
+                Mobile Number: {formData.phone}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                  placeholder="Enter last name"
-                />
-              </div>
+              <p className="text-muted-foreground mb-4">
+                We'll send a 6-digit OTP to verify your mobile number
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Input
-                  id="gender"
-                  value={formData.gender}
-                  onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-                  placeholder="Male/Female/Other"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="aadharNumber">Aadhar Number</Label>
-              <Input
-                id="aadharNumber"
-                value={formData.aadharNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, aadharNumber: e.target.value }))}
-                placeholder="1234 5678 9012"
-                maxLength={14}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fatherName">Father's Name</Label>
-              <Input
-                id="fatherName"
-                value={formData.fatherName}
-                onChange={(e) => setFormData(prev => ({ ...prev, fatherName: e.target.value }))}
-                placeholder="Enter father's name"
-              />
-            </div>
-            {formData.idScanned && (
-              <div className="text-sm text-success bg-success/10 p-3 rounded-md">
-                ✓ Information automatically filled from your Aadhar Card scan
+            
+            {!formData.otpSent ? (
+              <Button 
+                variant="trust" 
+                size="lg" 
+                onClick={sendOTP}
+                className="w-full"
+              >
+                <Shield className="h-5 w-5 mr-2" />
+                Send OTP
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="otp">Enter 6-digit OTP</Label>
+                  <Input
+                    id="otp"
+                    value={formData.otp}
+                    onChange={(e) => setFormData(prev => ({ ...prev, otp: e.target.value }))}
+                    placeholder="123456"
+                    maxLength={6}
+                    className="text-center text-2xl tracking-widest"
+                  />
+                </div>
+                <Button 
+                  variant="trust" 
+                  size="lg" 
+                  onClick={verifyOTP}
+                  disabled={formData.otp.length !== 6}
+                  className="w-full"
+                >
+                  {formData.otpVerified ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      OTP Verified
+                    </>
+                  ) : (
+                    "Verify OTP"
+                  )}
+                </Button>
+                <div className="text-sm text-muted-foreground text-center">
+                  Demo OTP: 123456
+                </div>
               </div>
             )}
           </div>
@@ -198,40 +213,60 @@ export const OnboardingFlow = () => {
 
       case 2:
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="+1 (555) 123-4567"
-              />
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="w-24 h-24 mx-auto bg-gradient-to-br from-primary/20 to-accent/20 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center mb-4">
+                <Fingerprint className="h-12 w-12 text-primary" />
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Place your finger on the scanner for biometric verification
+              </p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                placeholder="123 Main St, City, State 12345"
-              />
+            <Button 
+              variant="trust" 
+              size="lg" 
+              onClick={verifyBiometric}
+              disabled={formData.biometricVerified}
+              className="w-full"
+            >
+              {formData.biometricVerified ? (
+                <>
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Biometric Verified
+                </>
+              ) : (
+                <>
+                  <Fingerprint className="h-5 w-5 mr-2" />
+                  Scan Fingerprint
+                </>
+              )}
+            </Button>
+            <div className="text-xs text-muted-foreground text-center">
+              Secure biometric authentication as per RBI guidelines
             </div>
           </div>
         );
 
       case 3:
         return (
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
             <div className="w-20 h-20 mx-auto bg-gradient-to-br from-success to-accent rounded-full flex items-center justify-center">
               <CheckCircle className="h-10 w-10 text-white" />
             </div>
             <div>
               <h3 className="text-xl font-semibold text-foreground">Welcome, {formData.firstName}!</h3>
               <p className="text-muted-foreground">
-                Your account has been created successfully. You can now start managing your finances.
+                Your account has been created successfully using YONO quick onboarding.
               </p>
+            </div>
+            <div className="bg-primary/10 p-4 rounded-lg space-y-2">
+              <h4 className="font-semibold text-sm">Account Details:</h4>
+              <div className="text-sm space-y-1 text-left">
+                <p>• Aadhar Verified ✓</p>
+                <p>• Mobile Verified ✓</p>
+                <p>• Biometric Verified ✓</p>
+                <p>• Account Status: Active</p>
+              </div>
             </div>
           </div>
         );
