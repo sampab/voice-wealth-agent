@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,9 @@ import {
   BookOpen
 } from "lucide-react";
 import { VoiceInterface } from "./VoiceInterface";
+import { APIKeyInput } from "./APIKeyInput";
+import { AIService } from "@/services/aiService";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -26,22 +29,57 @@ interface Message {
 }
 
 export const AIAssistant = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "assistant",
-      content: "Hello! I'm your AI financial assistant. I can help you with banking questions, explain financial concepts, and guide you toward better financial health. What would you like to know?",
-      timestamp: new Date(),
-      suggestions: [
-        "How do I build an emergency fund?",
-        "What's a good credit score?",
-        "Help me create a budget",
-        "Explain compound interest"
-      ]
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [aiService, setAiService] = useState<AIService | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { toast } = useToast();
+
+  // Load API key from localStorage on component mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('openai_api_key');
+    if (savedApiKey) {
+      initializeAI(savedApiKey);
+    }
+  }, []);
+
+  const initializeAI = async (apiKey: string) => {
+    setIsConnecting(true);
+    try {
+      const service = new AIService(apiKey);
+      setAiService(service);
+      localStorage.setItem('openai_api_key', apiKey);
+      
+      // Add welcome message
+      const welcomeMessage: Message = {
+        id: "welcome",
+        type: "assistant",
+        content: "Hello! I'm your AI financial assistant powered by OpenAI. I can help you with banking questions, explain financial concepts, and guide you toward better financial health. What would you like to know?",
+        timestamp: new Date(),
+        suggestions: [
+          "How do I build an emergency fund?",
+          "What's a good credit score?",
+          "Help me create a budget",
+          "Explain compound interest"
+        ]
+      };
+      setMessages([welcomeMessage]);
+      
+      toast({
+        title: "AI Assistant Connected",
+        description: "Your AI financial assistant is now ready to help!",
+      });
+    } catch (error) {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to AI service. Please check your API key.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   const quickActions = [
     {
@@ -66,60 +104,53 @@ export const AIAssistant = () => {
     }
   ];
 
-  const simulateAIResponse = (userMessage: string) => {
+  const generateAIResponse = async (userMessage: string) => {
+    if (!aiService) return;
+    
     setIsTyping(true);
     
-    setTimeout(() => {
-      let response = "";
-      let suggestions: string[] = [];
+    try {
+      // Convert messages to AI format for context
+      const conversationHistory = messages.slice(-6).map(msg => ({
+        role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+        content: msg.content
+      }));
 
-      if (userMessage.toLowerCase().includes("emergency fund")) {
-        response = "An emergency fund is crucial for financial security! Here's how to build one:\n\n1. Start small - even $25/month adds up\n2. Set a goal of 3-6 months of expenses\n3. Keep it in a separate high-yield savings account\n4. Automate your savings to make it easier\n\nWould you like help calculating your target emergency fund amount?";
-        suggestions = [
-          "Calculate my emergency fund target",
-          "Best high-yield savings accounts",
-          "How to automate savings"
-        ];
-      } else if (userMessage.toLowerCase().includes("credit score")) {
-        response = "Great question! A credit score ranges from 300-850:\n\n• 750+: Excellent (best rates)\n• 700-749: Good\n• 650-699: Fair\n• 600-649: Poor\n• Below 600: Very Poor\n\nTo improve your score:\n1. Pay bills on time (35% of score)\n2. Keep credit utilization under 30%\n3. Don't close old credit cards\n4. Check your credit report regularly";
-        suggestions = [
-          "How to check my credit report",
-          "What affects credit utilization",
-          "Credit building strategies"
-        ];
-      } else if (userMessage.toLowerCase().includes("budget")) {
-        response = "Creating a budget is the foundation of financial health! Try the 50/30/20 rule:\n\n• 50% - Needs (rent, food, utilities)\n• 30% - Wants (entertainment, dining out)\n• 20% - Savings & debt repayment\n\nStart by tracking your expenses for a week to see where your money goes. Would you like me to help you categorize your expenses?";
-        suggestions = [
-          "Help categorize my expenses",
-          "Best budgeting apps",
-          "How to stick to a budget"
-        ];
-      } else {
-        response = "I'd be happy to help with that! For personalized financial advice, I can assist with budgeting, saving strategies, understanding credit, and explaining banking products. What specific area would you like to focus on?";
-        suggestions = [
-          "Help with budgeting",
-          "Saving strategies",
-          "Understanding loans",
-          "Investment basics"
-        ];
-      }
-
+      const response = await aiService.generateResponse(userMessage, conversationHistory);
+      
       const aiMessage: Message = {
         id: Date.now().toString(),
         type: "assistant",
-        content: response,
+        content: response.content,
         timestamp: new Date(),
-        suggestions
+        suggestions: response.suggestions
       };
 
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('AI Response Error:', error);
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        type: "assistant",
+        content: "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.",
+        timestamp: new Date(),
+        suggestions: ["Try again", "Check connection", "Contact support"]
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Response Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleSendMessage = (messageText?: string) => {
     const text = messageText || input;
-    if (!text.trim()) return;
+    if (!text.trim() || !aiService) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -131,12 +162,21 @@ export const AIAssistant = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     
-    simulateAIResponse(text);
+    generateAIResponse(text);
   };
 
   const handleVoiceInput = (text: string) => {
     handleSendMessage(text);
   };
+
+  // Show API key input if AI service is not connected
+  if (!aiService) {
+    return (
+      <div className="space-y-4">
+        <APIKeyInput onApiKeySet={initializeAI} isLoading={isConnecting} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
